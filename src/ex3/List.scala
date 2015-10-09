@@ -42,7 +42,8 @@ sealed trait List[+A] {
     case Cons(x, xs) => f(x, xs.foldRight2(z)(f))
   }
 
-  // it is not same as foldRight, see append() which is implemented by foldXxxx method
+  // it is not the same function as foldRight(), 
+  // see append() which is implemented by foldXxxx method
   def foldRight2[B](z: B)(f: (A, B) => B): B = foldLeft(z)((a,b)=>f(b,a))
   
   def length(): Int = foldLeft(0)((b, _) => b + 1)
