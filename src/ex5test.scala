@@ -26,4 +26,9 @@ object ex5test extends App {
   val l3 = l.takeWhile(_ < 7)
   println( l3 )
   //println( l3.toList() )
+  
+  println("ex5.4----------------------------------")
+  val ones: Stream[Int] = Stream(scala.util.Random.nextInt(), ones)
+  println( ones )
+  //println( ones.forall(_<1) )
 }

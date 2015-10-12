@@ -1,5 +1,8 @@
 package ex5
 
+import Stream.Empty
+import Stream.Cons
+
 sealed trait Stream[+A] {
   def headOption: Option[A] = this match {
     case Empty      => None
@@ -25,25 +28,33 @@ sealed trait Stream[+A] {
     case Empty      => Empty
     case Cons(h, t) => if (p(h())) Cons(h, () => t().takeWhile(p)) else t().takeWhile(p)
   }
-}
 
-case object Empty extends Stream[Nothing] {
-  println("Empty is created")
-}
-case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A] {
-  println("Cons is created")
+  def forall(p: A => Boolean): Boolean = this match {
+    case Empty      => true
+    case Cons(h, t) => p(h()) && t().forall(p)
+  }
 }
 
 object Stream {
-  def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
+  private case object Empty extends Stream[Nothing] {
+    println("Empty is created")
+
+    override def toString = "Nil"
+  }
+
+  private case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A] {
+    println("Cons is created")
+
+    override def toString = h() + "," + t().toString
+  }
+
+  def apply[A](hd: => A, tl: => Stream[A]): Stream[A] = {
     lazy val head = hd
     lazy val tail = tl
 
-    Cons(() => head, () => tail)
+    new Cons(() => head, () => tail)
   }
 
-  def empty[A]: Stream[A] = Empty
-
   def apply[A](as: A*): Stream[A] =
-    if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+    if (as.isEmpty) Empty else apply(as.head, apply(as.tail: _*))
 }
