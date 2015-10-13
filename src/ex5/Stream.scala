@@ -4,7 +4,7 @@ import Stream.Empty
 import Stream.Cons
 
 sealed trait Stream[+A] {
-  
+
   def headOption: Option[A] = this match {
     case Empty      => None
     case Cons(h, t) => Some(h())
@@ -16,7 +16,7 @@ sealed trait Stream[+A] {
   }
 
   def take(n: Int): Stream[A] = this match {
-    case Cons(h, t) if (n > 0) => Cons(h, () => t().take(n-1))
+    case Cons(h, t) if (n > 0) => Cons(h, () => t().take(n - 1))
     case _                     => Empty
   }
 
@@ -25,9 +25,18 @@ sealed trait Stream[+A] {
     case _                     => this
   }
 
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+    case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    case _          => z
+  }
+
   def takeWhile(p: A => Boolean): Stream[A] = this match {
-    case Empty      => Empty
-    case Cons(h, t) => if (p(h())) Cons( h, () => t().takeWhile(p)) else t().takeWhile(p)
+    case Cons(h, t) if (p(h())) => Cons(h, () => t().takeWhile(p))
+    case _                      => Empty
+  }
+
+  def takeWhile2(p: A => Boolean): Stream[A] = {
+    foldRight(Stream(): Stream[A])((a, b) => if (p(a)) Stream(a, b) else Empty)
   }
 
   def exists(p: A => Boolean): Boolean = this match {
@@ -40,25 +49,21 @@ sealed trait Stream[+A] {
     case Cons(h, t) => p(h()) && t().forall(p)
   }
 
-  def foldRight[B](z: => B)(f: (A, => B) => B): B = {
-    this match {
-      case Cons(h, t) => f(h(), t().foldRight(z)(f))
-      case _          => z
-    }
+  def map[B](f: A => B): Stream[B] = {
+    foldRight(Stream(): Stream[B])((a, b) => Stream(f(a), b))
   }
-  
-  //def map[B](f: A => B): Stream[B] = foldRight( Empty )( (a, b) => Cons( f(a), b ))
 
-//  class ConsWrapper[A](tl: => Stream[A]) {
-//    println("ConsWrapper is created")
-//    def #::(hd: A): Stream[A] = Cons(hd, tl) 
-//  }
-//  
-//  implicit def consWrapper[A](stream: () => Stream[A]): ConsWrapper[A] =
-//    new ConsWrapper[A](stream())
+  
+  //  class ConsWrapper[A](tl: => Stream[A]) {
+  //    println("ConsWrapper is created")
+  //    def #::(hd: A): Stream[A] = Cons(hd, tl) 
+  //  }
+  //  
+  //  implicit def consWrapper[A](stream: () => Stream[A]): ConsWrapper[A] =
+  //    new ConsWrapper[A](stream())
 
 }
-  
+
 object Stream {
 
   private case object Empty extends Stream[Nothing] {
@@ -68,7 +73,7 @@ object Stream {
   }
 
   private case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A] {
-    println("Cons is created")
+    //println("Cons is created")
   }
 
   //  override def toString = this match {
@@ -90,4 +95,9 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) Empty else apply(as.head, apply(as.tail: _*))
+    
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None         => Empty
+    case Some((a, s)) => Stream(a, unfold(s)(f))
+  }
 }
