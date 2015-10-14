@@ -86,11 +86,13 @@ object ex5test extends App {
   val unf1 = Stream.unfold[Int, Int](0)(x => Some((x, x + 1)))
   util time unf1.take(5).toList
 
-  val unf2 = Stream.unfold[Int, (Int, Int)]((0, 1))(x => Some((x._1, (x._2, x._1 + x._2))))
-  util time unf2.takeWhile(_ <= 100).toList
+  val fib2 = Stream.unfold[Int, (Int, Int)]((0, 1))(x => Some((x._1, (x._2, x._1 + x._2))))
+  util time fib2.takeWhile(_ <= 100).toList
 
-  def fibs2(a: Int, b: Int): Stream[Int] = {
-    Stream.unfold[Int, (Int, Int)]((a, b))(x => Some((x._1, (x._2, x._1 + x._2))))
+  def fibs3(a: Int, b: Int): Stream[Int] = {
+    Stream.unfold[Int, (Int, Int)]((a, b))(x => Some((x._1 , (x._2, x._1 + x._2))))
   }
-  util time fibs2(0, 1).takeWhile(_ <= 100).toList
+  util time fibs3(0, 1).takeWhile(_<= 100).toList
+  
+  util time Stream.unfold((0,1))( x => Some((x._1, (x._2, x._1 + x._2)))).takeWhile(_<=100).toList
 }

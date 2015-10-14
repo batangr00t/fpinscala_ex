@@ -90,7 +90,6 @@ object Stream {
     lazy val tail = tl
 
     new Cons(() => head, () => tail)
-
   }
 
   def apply[A](as: A*): Stream[A] =
