@@ -41,7 +41,7 @@ object ex5test extends App {
 
   println("ex5.4----------------------------------")
   val ones: Stream[Int] = Stream(1, ones)
-  println(ones)
+  println(ones.take(10))
   println(ones.exists(_ == 1))
   println(ones.forall(_ < 1))
 
@@ -57,9 +57,9 @@ object ex5test extends App {
   val to10 = nat(1).takeWhile(_ <= 10)
   util time (to10.foldRight(0)((x, y) => x + y))
   util time (to10.foldRight(List(): List[Int])((x, xs) => x :: xs))
-  util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)))
+  util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y))).take(10)
   util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)).take(10).toList)
-  println(nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)))
+  println(nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)).take(10))
 
   println(nat(1).takeWhile2(_ <= 2).toList)
 
@@ -72,7 +72,7 @@ object ex5test extends App {
   println(constant('A').take(10).toList)
   println(constant(BigInt(100)).take(10).toList)
   println(constant(List("haha", "world")).take(3).toList)
-  println(constant((a: Int, b: Int) => a * b))
+  println(constant((a: Int, b: Int) => a * b).take(5))
 
   println("ex5.9----------------------------------")
   def from(n: Int): Stream[Int] = Stream(n, from(n + 1))
@@ -89,10 +89,20 @@ object ex5test extends App {
   val fib2 = Stream.unfold[Int, (Int, Int)]((0, 1))(x => Some((x._1, (x._2, x._1 + x._2))))
   util time fib2.takeWhile(_ <= 100).toList
 
-  def fibs3(a: Int, b: Int): Stream[Int] = {
+  def fibsUnfold(a: Int, b: Int): Stream[Int] = {
     Stream.unfold[Int, (Int, Int)]((a, b))(x => Some((x._1 , (x._2, x._1 + x._2))))
   }
-  util time fibs3(0, 1).takeWhile(_<= 100).toList
+  util time fibsUnfold(0, 1).takeWhile(_<= 100).toList
   
-  util time Stream.unfold((0,1))( x => Some((x._1, (x._2, x._1 + x._2)))).takeWhile(_<=100).toList
+  println("ex5.12---------------------------------")
+  def fromUnfold(n: Int): Stream[Int] = Stream.unfold(n)(x => Some( (x, x+1) ) )
+  
+  util time ( fromUnfold(10).take(10).toList )
+  util time ( from(10).take(10).toList )
+  
+  def constantUnfold[T](c: T): Stream[T] = Stream.unfold(c)( _ => Some( (c, c) ) )
+  
+  util time ( constantUnfold("Hi").take(10).toList )
+  util time ( constant("Co").take(10).toList )
+  
 }
