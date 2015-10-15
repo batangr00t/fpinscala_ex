@@ -41,7 +41,7 @@ object ex5test extends App {
 
   println("ex5.4----------------------------------")
   val ones: Stream[Int] = Stream(1, ones)
-  println(ones)
+  println(ones.take(10))
   println(ones.exists(_ == 1))
   println(ones.forall(_ < 1))
 
@@ -57,9 +57,9 @@ object ex5test extends App {
   val to10 = nat(1).takeWhile(_ <= 10)
   util time (to10.foldRight(0)((x, y) => x + y))
   util time (to10.foldRight(List(): List[Int])((x, xs) => x :: xs))
-  util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)))
+  util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y))).take(10)
   util time (nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)).take(10).toList)
-  println(nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)))
+  println(nat(1).foldRight(Stream(): Stream[Int])((x, y) => Stream(x, y)).take(10))
 
   println(nat(1).takeWhile2(_ <= 2).toList)
 
@@ -72,7 +72,7 @@ object ex5test extends App {
   println(constant('A').take(10).toList)
   println(constant(BigInt(100)).take(10).toList)
   println(constant(List("haha", "world")).take(3).toList)
-  println(constant((a: Int, b: Int) => a * b))
+  println(constant((a: Int, b: Int) => a * b).take(10))
 
   println("ex5.9----------------------------------")
   def from(n: Int): Stream[Int] = Stream(n, from(n + 1))
@@ -95,4 +95,25 @@ object ex5test extends App {
   util time fibs3(0, 1).takeWhile(_<= 100).toList
   
   util time Stream.unfold((0,1))( x => Some((x._1, (x._2, x._1 + x._2)))).takeWhile(_<=100).toList
+  
+  println("ex5.13---------------------------------")
+  val s1 = Stream( 1, 2, 3 )
+  val s2 = constant( "Hi" )
+  
+  println( s1.zipAll( s2 ) )
+  println( s2.zipAll( s1 ) )
+  
+  println( Stream() )
+  
+  println("ex5.14---------------------------------")
+  val s3 = Stream( 1, 2, 3 )
+  val s4 = Stream( 1, 2 )
+  val s5 = from(1)
+    
+  println( s3.startsWith(s4) ) // true
+  println( s4.startsWith(s3) ) // false
+  println( s4.startsWith(s5) ) // false
+  println( s5.startsWith(s4) ) // true
+  
+  println( s5.startsWith(Stream()) ) // true
 }

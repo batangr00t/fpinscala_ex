@@ -53,7 +53,17 @@ sealed trait Stream[+A] {
     foldRight(Stream(): Stream[B])((a, b) => Stream(f(a), b))
   }
 
-  
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = (this, s2) match {
+    case (Cons(h, t), Cons(h2, t2)) => Stream((Some(h()), Some(h2())), t().zipAll(t2()))
+    case _                          => Empty
+  }
+
+  def startsWith[A](s2: Stream[A]): Boolean = (this, s2) match {
+    case (Cons(h, t), Cons(h2, t2)) => (h() == h2()) && t().startsWith(t2())
+    case (Empty, Cons(_, _))        => false
+    case _                          => true
+  }
+
   //  class ConsWrapper[A](tl: => Stream[A]) {
   //    println("ConsWrapper is created")
   //    def #::(hd: A): Stream[A] = Cons(hd, tl) 
@@ -69,21 +79,15 @@ object Stream {
   private case object Empty extends Stream[Nothing] {
     println("Empty is created")
 
-    override def toString = "Nil"
+    override def toString = "Empty"
   }
 
   private case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A] {
     //println("Cons is created")
+    override def toString = {
+      if (headOption == None) "\n" else h() + "," + t().toString()
+    }
   }
-
-  //  override def toString = this match {
-  //    def loop(n:Int, stream:Stream[A] ) = stream match {
-  //      case Empty => this.toString()
-  //      case Cons(h,t) => if ( n <= 0 ) "?" else h() + "," + ( loop(n-1, t()) ) 
-  //    }
-  //      
-  //    loop( 10, this)   
-  //  }
 
   def apply[A](hd: => A, tl: => Stream[A]): Stream[A] = {
     lazy val head = hd
@@ -94,7 +98,7 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) Empty else apply(as.head, apply(as.tail: _*))
-    
+
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
     case None         => Empty
     case Some((a, s)) => Stream(a, unfold(s)(f))
