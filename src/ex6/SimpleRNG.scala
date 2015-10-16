@@ -2,6 +2,7 @@ package ex6
 
 trait RNG {
   def nextInt: (Int, RNG)
+
 }
 
 case class SimpleRNG(seed: Long) extends RNG {
@@ -11,5 +12,4 @@ case class SimpleRNG(seed: Long) extends RNG {
     val n = (newSeed >>> 16).toInt
     (n, nextRNG)
   }
-
 }
