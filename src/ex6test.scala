@@ -218,18 +218,7 @@ object ex6test extends App {
   def newmap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
     flatMap(s)(a => unit(f(a)))
   }
-
   println(newmap(nonNegativeInt)(_ % 10)(newRng682))
-
-  //  def newmap2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-  //    flatMap(rng => {
-  //      val (a, rng1) = ra(rng)
-  //      val (b, rng2) = rb(rng1)
-  //      ((a, b), rng2)
-  //    })(
-  //      pair =>
-  //        rng => (f(pair._1, pair._2), rng))
-  //  }
 
   def multiple(n: Int) = map(nonNegativeInt)(i => (i % 10 + 1) * n)
   def multipleList(rng: RNG) = {
@@ -241,6 +230,16 @@ object ex6test extends App {
   print("mutiple(" + mList._1 + ") = ")
   println(mList._2)
 
+  //  def newmap2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+  //    flatMap(rng => {
+  //      val (a, rng1) = ra(rng)
+  //      val (b, rng2) = rb(rng1)
+  //      ((a, b), rng2)
+  //    })(
+  //      pair =>
+  //        rng => (f(pair._1, pair._2), rng))
+  //  }
+
   def newmap2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
     flatMap(ra)(a => newmap(rb)(b => f(a, b)))
   }
@@ -248,11 +247,27 @@ object ex6test extends App {
   println(newmap2(int, double)((_, _))(newRng682))
   println(newmap2(double, int)((_, _))(rng))
 
-  //  println("ex6.10---------------------------------")
-  //  val s: State[RNG, Int] = State(rng => rng.nextInt)
-  //
-  //  println(s.map(_ % 10).run(rng))
-  //
-  //  println("ex6.11---------------------------------")
-  //  //def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] 
+  def map3[A, B, C, D](ra: Rand[A], rb: Rand[B], rc: Rand[C])(f: (A, B, C) => D): Rand[D] = {
+    flatMap(ra)(a => flatMap(rb)(b => map(rc)(c => f(a, b, c))))
+  }
+
+  println(map3(int, nonNegativeInt, double)((_, _, _))(rng))
+
+  println("ex6.10---------------------------------")
+  val s: State[RNG, Int] = State(rng => rng.nextInt)
+
+  val s10 = s.map(_ % 10)
+  println(s10.run(rng))
+
+  def nonNegativeState = s.map(n => if (n >= 0) n else (-(n + 1)))
+  println(nonNegativeState.run(rng))
+  
+  def doubleState = nonNegativeState.map( n => n.toDouble / Int.MaxValue )
+  println( doubleState.run(rng) )
+  
+  def intDoubleState = nonNegativeState.map2( doubleState ) ( (i,d) => (i, d ) )
+  println( intDoubleState.run(rng) )
+
+  println("ex6.11---------------------------------")
+  //def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] 
 }
