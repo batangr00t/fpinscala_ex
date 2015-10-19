@@ -218,9 +218,9 @@ object ex6test extends App {
   def newmap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
     flatMap(s)(a => unit(f(a)))
   }
-  
+
   println(newmap(nonNegativeInt)(_ % 10)(newRng682))
-  
+
   //  def newmap2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
   //    flatMap(rng => {
   //      val (a, rng1) = ra(rng)
@@ -231,11 +231,16 @@ object ex6test extends App {
   //        rng => (f(pair._1, pair._2), rng))
   //  }
 
-  def multiple(n:Int) = map(nonNegativeInt)( i => ( i % 10) * n )
-  def multipleList(n:Int) = sequence(List.fill(10)(multiple(n)))
-  
-  println( flatMap(r00)( n => multipleList(n) )(rng) )    
-    
+  def multiple(n: Int) = map(nonNegativeInt)(i => (i % 10 + 1) * n)
+  def multipleList(rng: RNG) = {
+    val (n, newRng) = map(nonNegativeInt)(_ % 9 + 2)(rng)
+    (n, sequence(List.fill(10)(multiple(n)))(newRng))
+  }
+
+  def mList = multipleList(rng)
+  print("mutiple(" + mList._1 + ") = ")
+  println(mList._2)
+
   def newmap2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
     flatMap(ra)(a => newmap(rb)(b => f(a, b)))
   }
